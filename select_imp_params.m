@@ -1,13 +1,16 @@
 function params_new = select_imp_params(params,I,S)
 [imp,dnd]=sort(params(:,1),'ascend');
 i = 1;
-while (imp(i) < I && sum(params(:,1)) >= S) ||...
-        params(dnd(i),3) < mean(params(:,3)) - std(params(:,3))
-    params(dnd(i),:)=[];
+needToClean = true;
+while sum(params(:,1)) >= S && needToClean
+    lowStd = log10(params(:,3)) <...
+        mean(log10(params(:,3))) - [3,2,1].*std(log10(params(:,3)));
+    overFit = sum(lowStd,2)>=2;
+    needToClean = any(overFit);
+    params(overFit,:)=[];
     [imp,dnd] = sort(params(:,1),'ascend');
 end
-lowStd = params(:,3) < mean(params(:,3)) - std(params(:,3));
-params_new = params(~lowStd,:);
-params_new(:,1) = params_new(:,1)/sum(params_new(:,1));
+params_new = params;
+params_new(:,1) = params(:,1)/sum(params(:,1));
 end
 
